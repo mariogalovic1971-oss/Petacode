@@ -1,0 +1,2540 @@
+```html
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-select=none">
+  <title>Petalcode - 3D Cymatics &amp; Sacred Geometry</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg-deep: #07070b;
+      --glass-bg: rgba(14, 14, 22, 0.36);
+      --glass-strong: rgba(14, 14, 22, 0.44);
+      --border-subtle: rgba(255, 255, 255, 0.14);
+      --gold: #fbbf24;
+      --active-accent: #fbbf24;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 16px 12px 54px 12px;
+      user-select: none;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    #cymatic-bg-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      display: block;
+    }
+
+    .cosmic-vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 42%, rgba(7, 7, 11, 0.04) 0%, rgba(7, 7, 11, 0.56) 100%);
+    }
+
+    .top-floating-controls {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 2000;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .lang-toggle-btn,
+    .pure-3d-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(14, 14, 24, 0.84);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(251, 191, 36, 0.65);
+      color: #fbbf24;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.65);
+      transition: all 0.22s ease;
+    }
+
+    .lang-toggle-btn:hover,
+    .pure-3d-toggle-btn:hover {
+      background: rgba(251, 191, 36, 0.25);
+      color: #ffffff;
+    }
+
+    .pure-3d-toggle-btn.active {
+      background: #fbbf24;
+      color: #07070b;
+      border-color: #ffffff;
+      box-shadow: 0 0 22px rgba(251, 191, 36, 0.85);
+    }
+
+    .live-toast-banner {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      z-index: 1800;
+      width: calc(100% - 24px);
+      max-width: 460px;
+      background: rgba(15, 15, 25, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid var(--active-accent);
+      border-radius: 16px;
+      padding: 11px 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75), 0 0 18px rgba(251, 191, 36, 0.25);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+    }
+
+    .live-toast-banner.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .toast-hz-tag {
+      background: var(--active-accent);
+      color: #07070b;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .toast-sub {
+      font-size: 0.73rem;
+      color: #cbd5e1;
+      margin-top: 4px;
+      line-height: 1.35;
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 460px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: opacity 0.28s ease, transform 0.22s ease, max-width 0.25s ease;
+    }
+
+    /* Tablet i veći ekrani */
+    @media (min-width: 720px) {
+      body {
+        padding: 24px 20px 64px 20px;
+      }
+
+      .app-container {
+        max-width: 720px;
+      }
+
+      #tab-creator .svg-container {
+        max-width: 460px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      #tab-creator .display-panel,
+      #tab-creator .creator-vibro-bar,
+      #tab-creator .creator-controls-box {
+        max-width: 560px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .gallery-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+
+      .font-palette-grid {
+        grid-template-columns: repeat(6, 1fr);
+      }
+
+      .manifest-card {
+        padding: 28px 26px;
+      }
+    }
+
+    /* Desktop / široki monitor */
+    @media (min-width: 1100px) {
+      .app-container {
+        max-width: 820px;
+      }
+
+      .gallery-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+
+      .font-palette-grid {
+        grid-template-columns: repeat(8, 1fr);
+      }
+    }
+
+    body.pure-3d-mode .app-container {
+      opacity: 0.04;
+      pointer-events: none;
+      transform: scale(0.985);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 12px;
+      width: 100%;
+      padding: 12px 96px 12px 14px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+    }
+
+    h1 {
+      color: var(--gold);
+      font-size: 1.45rem;
+      letter-spacing: 3px;
+      font-weight: 800;
+      text-transform: uppercase;
+      text-shadow: 0 0 18px rgba(251, 191, 36, 0.55);
+    }
+
+    .subtitle {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      margin-top: 3px;
+      letter-spacing: 0.5px;
+    }
+
+    .live-freq-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      font-size: 0.72rem;
+      color: #f8fafc;
+      font-weight: 600;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--active-accent);
+      box-shadow: 0 0 10px var(--active-accent);
+      transition: background 0.25s, box-shadow 0.25s, transform 0.2s;
+    }
+
+    .tab-navigation {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      width: 100%;
+      background: var(--glass-strong);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 4px;
+      margin-bottom: 12px;
+      gap: 3px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .tab-btn {
+      padding: 9px 2px;
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      font-weight: 700;
+      font-size: 0.7rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      line-height: 1.2;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+    }
+
+    .tab-btn:hover { color: #ffffff; }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #07070b;
+      text-shadow: none;
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.45);
+    }
+
+    .tab-content {
+      width: 100%;
+      display: none;
+      animation: fadeTabIn 0.22s ease;
+    }
+
+    .tab-content.active { display: block; }
+
+    @keyframes fadeTabIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* TAB 1: KREATOR */
+    .svg-container {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: rgba(11, 11, 17, 0.78);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border-radius: 22px;
+      border: 1.5px solid rgba(251, 191, 36, 0.35);
+      padding: 12px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65);
+      margin-bottom: 10px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
+    }
+
+    .svg-container svg {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+      overflow: visible;
+      shape-rendering: geometricPrecision;
+    }
+
+    .grid-circle {
+      fill: none;
+      stroke: rgba(251, 191, 36, 0.24);
+      stroke-width: 1;
+    }
+
+    .petal {
+      fill: rgba(251, 191, 36, 0.07);
+      stroke: rgba(251, 191, 36, 0.78);
+      stroke-width: 1.75;
+      cursor: pointer;
+      transition: fill 0.18s ease, stroke 0.18s ease, filter 0.18s ease;
+    }
+
+    .petal:hover { fill: rgba(251, 191, 36, 0.24); }
+
+    .petal.active {
+      fill: rgba(251, 191, 36, 0.9);
+      stroke: #ffffff;
+      stroke-width: 2.5;
+      filter: drop-shadow(0 0 14px rgba(251, 191, 36, 0.95));
+    }
+
+    .petal-label {
+      fill: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+      pointer-events: none;
+      text-anchor: middle;
+      dominant-baseline: central;
+      user-select: none;
+      text-shadow: 0 0 5px #000, 0 0 10px #000;
+    }
+
+    .display-panel {
+      width: 100%;
+      background: var(--glass-strong);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+    }
+
+    .array-text {
+      font-family: monospace;
+      font-size: 1rem;
+      color: var(--gold);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .rotate-controls { display: flex; gap: 6px; }
+
+    .btn-rot {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--gold);
+      border: 1px solid rgba(251, 191, 36, 0.28);
+      border-radius: 9px;
+      width: 36px;
+      height: 36px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.15s;
+    }
+
+    .btn-rot:active { background: rgba(251, 191, 36, 0.25); }
+
+    .creator-vibro-bar {
+      width: 100%;
+      background: var(--glass-bg);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+    }
+
+    .creator-vibro-info { display: flex; flex-direction: column; gap: 2px; }
+    .creator-vibro-title { font-size: 0.82rem; font-weight: 700; color: #ffffff; }
+    .creator-vibro-sub { font-size: 0.72rem; color: #cbd5e1; }
+
+    .creator-vibro-badge {
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: #07070b;
+      background: var(--gold);
+      white-space: nowrap;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+    }
+
+    .creator-controls-box {
+      width: 100%;
+      background: var(--glass-strong);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .char-picker-row { display: flex; gap: 5px; justify-content: center; }
+
+    .picker-tab {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: #cbd5e1;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 8px 3px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .picker-tab.active {
+      background: var(--gold);
+      color: #07070b;
+      border-color: var(--gold);
+    }
+
+    .char-grid-selector {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 5px;
+      max-height: 112px;
+      overflow-y: auto;
+      background: rgba(10, 10, 16, 0.46);
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      scrollbar-width: thin;
+      scrollbar-color: var(--gold) transparent;
+    }
+
+    .char-choice-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: #e2e8f0;
+      font-weight: 700;
+      font-size: 0.84rem;
+      padding: 6px 0;
+      border-radius: 7px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .char-choice-btn:hover, .char-choice-btn.selected {
+      background: var(--gold);
+      color: #07070b;
+      border-color: var(--gold);
+    }
+
+    .save-action-row { display: flex; gap: 8px; align-items: center; }
+
+    .selected-preview-input {
+      background: rgba(7, 7, 11, 0.85);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      border-radius: 10px;
+      padding: 10px 6px;
+      font-weight: 800;
+      font-size: 1rem;
+      width: 76px;
+      text-align: center;
+      outline: none;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    .btn:active { transform: scale(0.96); }
+    .btn-save { background: var(--gold); color: #07070b; flex: 1; padding: 12px 10px; }
+    .btn-clear { background: #ef4444; color: #ffffff; width: 44px; padding: 12px 0; }
+
+    /* GALERIJE I KARTICE */
+    .gallery-section { width: 100%; }
+
+    .gallery-section h2 {
+      font-size: 0.85rem;
+      color: #f1f5f9;
+      margin-bottom: 10px;
+      text-align: left;
+      line-height: 1.4;
+      background: var(--glass-bg);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--glass-strong);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      touch-action: pan-y;
+      min-height: 122px;
+      min-width: 0;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+    }
+
+    .card:hover { border-color: var(--gold); }
+    .card.customized { border-color: rgba(251, 191, 36, 0.55); }
+
+    .card-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      min-width: 0;
+    }
+
+    .card-char { font-size: 0.95rem; font-weight: 800; color: var(--gold); }
+
+    .card-delete {
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 2px 4px;
+    }
+
+    .card-delete:hover { color: #ef4444; }
+
+    .card .card-preview {
+      width: 75px;
+      height: 75px;
+      max-width: 85%;
+      aspect-ratio: 1 / 1;
+      margin: 4px auto;
+      flex: 0 0 auto;
+      shape-rendering: geometricPrecision;
+      overflow: visible;
+      transform: scale(1.19);
+      transform-origin: 50% 50%;
+    }
+
+    .card {
+      background: var(--glass-strong);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      touch-action: pan-y;
+      min-height: 122px;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+    }
+
+    .card:hover { border-color: var(--gold); }
+    .card.customized { border-color: rgba(251, 191, 36, 0.55); }
+
+    .card-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .card-char { font-size: 0.95rem; font-weight: 800; color: var(--gold); }
+
+    .card-delete {
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 2px 4px;
+    }
+
+    .card-delete:hover { color: #ef4444; }
+
+    .card .card-preview {
+      width: 85%;
+      height: auto;
+      aspect-ratio: 1/1;
+      margin: 4px 0;
+      shape-rendering: geometricPrecision;
+      overflow: visible;
+      transform: scale(1.19);
+    }
+
+    .mini-petal {
+      fill: rgba(251, 191, 36, 0.06);
+      stroke: rgba(251, 191, 36, 0.34);
+      stroke-width: 1.2;
+      transition: fill 0.15s ease, stroke 0.15s ease, filter 0.15s ease;
+    }
+
+    .mini-petal.active {
+      fill: var(--gold);
+      stroke: #ffffff;
+      stroke-width: 2;
+    }
+
+    .mini-grid-circle {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.09);
+      stroke-width: 0.8;
+    }
+
+    .card-code {
+      font-size: 0.62rem;
+      color: #cbd5e1;
+      margin-top: auto;
+      padding-top: 4px;
+      font-family: monospace;
+      text-align: center;
+      width: 100%;
+    }
+
+    .card.vibrating {
+      animation: cymaticsWave 0.34s infinite alternate ease-in-out;
+      border-color: #ffffff !important;
+      box-shadow: 0 0 28px rgba(251, 191, 36, 0.65);
+    }
+
+    .card.vibrating .card-preview {
+      animation: cymaticsMorph 0.34s infinite alternate ease-in-out;
+    }
+
+    @keyframes cymaticsWave {
+      0% { transform: scale(1.04); }
+      100% { transform: scale(1.13); }
+    }
+
+    @keyframes cymaticsMorph {
+      0% { transform: scale(1.08) rotate(-2deg); }
+      100% { transform: scale(1.2) rotate(3deg); }
+    }
+
+    /* TAB 2: MOJ FONT */
+    .writer-box {
+      width: 100%;
+      background: var(--glass-strong);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .font-palette-container {
+      width: 100%;
+      background: rgba(10, 10, 16, 0.42);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 11px;
+    }
+
+    .font-palette-title {
+      font-size: 0.75rem;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .font-palette-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      max-height: 175px;
+      overflow-y: auto;
+      padding-right: 3px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--gold) transparent;
+    }
+
+    .palette-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 7px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .palette-btn:hover { border-color: var(--gold); }
+
+    .palette-btn.active-variant {
+      border-color: var(--gold);
+      background: rgba(251, 191, 36, 0.16);
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.35);
+    }
+
+    .palette-btn-char {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 2px;
+    }
+
+    .palette-btn-svg {
+      width: 44px;
+      height: 44px;
+      margin: 2px 0;
+      shape-rendering: geometricPrecision;
+      overflow: visible;
+    }
+
+    .writer-input {
+      width: 100%;
+      background: rgba(10, 10, 16, 0.58);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 10px;
+      padding: 12px;
+      color: #ffffff;
+      font-size: 0.96rem;
+      outline: none;
+      resize: none;
+      min-height: 58px;
+      line-height: 1.4;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+    }
+
+    .writer-input::placeholder { color: #94a3b8; }
+    .writer-input:focus { border-color: var(--gold); }
+
+    .writer-slider-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+    }
+
+    .writer-slider {
+      flex: 1;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+
+    .color-mode-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: #cbd5e1;
+    }
+
+    .color-mode-select {
+      flex: 1;
+      max-width: 225px;
+      background: rgba(10, 10, 16, 0.65);
+      border: 1px solid rgba(251, 191, 36, 0.42);
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 7px 9px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .writer-controls-below {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      width: 100%;
+    }
+
+    .instrument-select {
+      flex: 1;
+      min-width: 0;
+      background: rgba(10, 10, 16, 0.65);
+      border: 1px solid rgba(251, 191, 36, 0.42);
+      color: var(--gold);
+      border-radius: 10px;
+      padding: 8px 9px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .btn-symphony {
+      background: linear-gradient(135deg, #fbbf24, #d97706);
+      color: #07070b;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 11px;
+      font-weight: 800;
+      font-size: 0.76rem;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.4);
+    }
+
+    .btn-symphony.playing {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.45);
+    }
+
+    .btn-symphony:active { transform: scale(0.96); }
+
+    .writer-output {
+      width: 100%;
+      min-height: 210px;
+      max-height: 310px;
+      background: rgba(8, 8, 14, 0.48);
+      border: 1px solid rgba(251, 191, 36, 0.28);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      justify-content: flex-start;
+      gap: 8px 2px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--gold) transparent;
+    }
+
+    .word-group {
+      display: inline-flex;
+      flex-wrap: nowrap;
+      gap: 2px;
+      align-items: center;
+    }
+
+    .written-char-wrapper {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      animation: glyphAliveBreathe var(--breath-dur, 3.6s) infinite ease-in-out;
+      animation-delay: var(--breath-delay, 0s);
+      transition: transform 0.25s ease;
+    }
+
+    @keyframes glyphAliveBreathe {
+      0%, 100% { transform: scale(0.96); opacity: 0.92; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+
+    .written-char-svg {
+      width: 100%;
+      height: 100%;
+      shape-rendering: geometricPrecision;
+      overflow: visible;
+      transition: filter 0.2s ease, transform 0.2s ease;
+    }
+
+    .written-char-svg.playing {
+      filter: drop-shadow(0 0 18px var(--glyph-color, #fbbf24));
+      transform: scale(1.34) !important;
+      animation: cymaticsSymphonyWave 0.24s infinite alternate ease-in-out;
+    }
+
+    @keyframes cymaticsSymphonyWave {
+      0% { transform: scale(1.24) rotate(-3deg); }
+      100% { transform: scale(1.4) rotate(3deg); }
+    }
+
+    /* TAB 4: 3D CIMATIKA */
+    .studio-card {
+      width: 100%;
+      background: var(--glass-strong);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(251, 191, 36, 0.34);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+    }
+
+    .studio-header { text-align: center; }
+    .studio-header h2 { color: var(--gold); font-size: 1.1rem; font-weight: 800; }
+    .studio-header p { font-size: 0.78rem; color: #cbd5e1; margin-top: 3px; }
+
+    .mode-selector-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    .mode-btn {
+      padding: 9px 6px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
+      font-size: 0.73rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: rgba(251, 191, 36, 0.22);
+      border-color: var(--gold);
+      color: var(--gold);
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.28);
+    }
+
+    .studio-freq-display {
+      background: rgba(10, 10, 16, 0.48);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .studio-hz-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .studio-hz-big {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: 0.5px;
+      font-family: monospace;
+      text-shadow: 0 0 18px rgba(251, 191, 36, 0.45);
+    }
+
+    .sub-hz-beacon {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 14px var(--gold);
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+
+    .studio-chakra-name {
+      font-size: 0.8rem;
+      color: #e2e8f0;
+      font-weight: 600;
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+
+    .studio-sub-note {
+      font-size: 0.71rem;
+      color: #fde68a;
+      margin-top: 6px;
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      border-radius: 8px;
+      padding: 6px 8px;
+      line-height: 1.35;
+    }
+
+    .pulse-rhythm-box {
+      background: rgba(10, 10, 16, 0.46);
+      border: 1px solid rgba(251, 191, 36, 0.28);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .pulse-rhythm-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #fde68a;
+    }
+
+    .pulse-phase-pill {
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(251, 191, 36, 0.18);
+      border: 1px solid rgba(251, 191, 36, 0.55);
+      color: #fbbf24;
+      font-family: monospace;
+      font-size: 0.73rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .dual-pulse-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .pulse-phase-control {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 9px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .pulse-sub-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+
+    .pulse-sec-val {
+      color: var(--gold);
+      font-family: monospace;
+      font-weight: 800;
+      font-size: 0.76rem;
+    }
+
+    .studio-slider-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .slider-ticks {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+
+    .preset-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .preset-chip {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .preset-chip:hover, .preset-chip.active-preset {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(251, 191, 36, 0.14);
+    }
+
+    .studio-audio-row { display: flex; gap: 8px; }
+
+    .btn-studio-tone {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 800;
+      font-size: 0.86rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #07070b;
+      box-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
+    }
+
+    .btn-studio-tone.playing {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.45);
+    }
+
+    /* TAB 5: SVJESNO DISANJE */
+    .manifest-card {
+      width: 100%;
+      background: rgba(14, 14, 22, 0.48);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(251, 191, 36, 0.38);
+      border-radius: 20px;
+      padding: 22px 18px;
+      box-shadow: 0 0 35px rgba(251, 191, 36, 0.14), 0 14px 35px rgba(0, 0, 0, 0.48);
+      animation: manifestAura 8s infinite ease-in-out;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+    }
+
+    @keyframes manifestAura {
+      0%, 100% {
+        border-color: rgba(251, 191, 36, 0.32);
+        box-shadow: 0 0 28px rgba(251, 191, 36, 0.1), 0 14px 35px rgba(0, 0, 0, 0.65);
+      }
+      50% {
+        border-color: rgba(251, 191, 36, 0.65);
+        box-shadow: 0 0 42px rgba(251, 191, 36, 0.24), 0 14px 35px rgba(0, 0, 0, 0.65);
+      }
+    }
+
+    .breath-rhythm-strip {
+      background: rgba(10, 10, 16, 0.52);
+      border: 1px solid rgba(251, 191, 36, 0.32);
+      border-radius: 14px;
+      padding: 11px 13px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .manifest-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--gold);
+      text-align: center;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .manifest-sub {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .manifest-flow-text {
+      font-size: 0.91rem;
+      color: #f1f5f9;
+      line-height: 1.75;
+      text-align: left;
+      font-weight: 400;
+    }
+
+    .manifest-flow-text p { margin-bottom: 14px; }
+    .manifest-flow-text p:last-child { margin-bottom: 0; }
+    .manifest-highlight { color: #fde68a; font-weight: 600; }
+
+    /* POPUP & LABORATORIJ */
+    .vibe-popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 16px;
+    }
+
+    .vibe-popup-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .vibe-popup-card {
+      background: #12121c;
+      border: 2px solid var(--gold);
+      border-radius: 20px;
+      padding: 18px;
+      width: 100%;
+      max-width: 380px;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.9);
+      text-align: center;
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+
+    .vibe-popup-overlay.show .vibe-popup-card { transform: scale(1); }
+
+    .popup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .popup-header-left { display: flex; align-items: center; gap: 12px; }
+
+    .popup-char-badge {
+      font-size: 1.5rem;
+      font-weight: 800;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #07070b;
+      flex-shrink: 0;
+    }
+
+    .popup-title { font-size: 1.08rem; font-weight: 800; color: #ffffff; text-align: left; }
+
+    .popup-close-btn {
+      background: #27273a;
+      border: none;
+      color: #cbd5e1;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .popup-info-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.8rem;
+      border-bottom: 1px solid #27273a;
+      padding-bottom: 4px;
+      gap: 8px;
+    }
+
+    .popup-label { color: #94a3b8; font-weight: 600; text-align: left; }
+    .popup-val { color: #ffffff; font-weight: 700; text-align: right; }
+
+    .breath-box {
+      margin-top: 10px;
+      background: #181824;
+      border-radius: 12px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .breath-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--gold);
+      animation: breathPulse 4s infinite ease-in-out;
+    }
+
+    @keyframes breathPulse {
+      0%, 100% { transform: scale(0.9); box-shadow: 0 0 5px rgba(251, 191, 36, 0.2); }
+      50% { transform: scale(1.2); box-shadow: 0 0 16px rgba(251, 191, 36, 0.65); }
+    }
+
+    .breath-text { font-size: 0.75rem; color: #94a3b8; }
+
+    .popup-effect {
+      margin-top: 8px;
+      background: #181824;
+      padding: 9px;
+      border-radius: 10px;
+      font-size: 0.76rem;
+      color: #e2e8f0;
+      line-height: 1.35;
+      text-align: left;
+    }
+
+    .lab-panel {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed #3b3b54;
+      text-align: left;
+      display: none;
+    }
+
+    .lab-panel.visible { display: block; }
+
+    .lab-title {
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .lab-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .lab-input {
+      background: #181824;
+      border: 1px solid #3b3b54;
+      color: #ffffff;
+      border-radius: 8px;
+      padding: 7px 9px;
+      font-size: 0.82rem;
+      outline: none;
+      width: 100%;
+    }
+
+    .lab-input:focus { border-color: var(--gold); }
+
+    .lab-color-picker {
+      width: 44px;
+      height: 34px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .lab-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+    .lab-btn {
+      flex: 1;
+      padding: 9px 6px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .lab-btn-test { background: #27273a; color: var(--gold); }
+    .lab-btn-save { background: var(--gold); color: #07070b; }
+    .lab-btn-reset { background: #3f1d24; color: #f87171; }
+  </style>
+</head>
+<body>
+
+<canvas id="cymatic-bg-canvas"></canvas>
+<div class="cosmic-vignette"></div>
+
+<div class="top-floating-controls">
+  <button id="lang-toggle-btn" class="lang-toggle-btn" onclick="toggleLanguage()" title="Switch HR / EN">
+    <span id="lang-label">EN</span>
+  </button>
+  <button id="pure-3d-btn" class="pure-3d-toggle-btn" onclick="togglePure3DView()" title="3D View">
+    <span>👁</span>
+    <span id="pure-3d-label">3D</span>
+  </button>
+</div>
+
+<div id="live-toast" class="live-toast-banner">
+  <div class="toast-top">
+    <span id="toast-title">Latica #1</span>
+    <span id="toast-hz" class="toast-hz-tag">280 Hz</span>
+  </div>
+  <div id="toast-sub" class="toast-sub">Informacija o tonu i rezonanciji</div>
+</div>
+
+<div class="app-container" id="app-container">
+  <header>
+    <h1 id="app-title">Petalcode</h1>
+    <p id="app-subtitle" class="subtitle">3D Cimatska i Sveta Geometrija</p>
+    <div class="live-freq-pill">
+      <span id="live-dot" class="live-dot"></span>
+      <span id="live-status-text">432 Hz • Cvijet Života</span>
+    </div>
+  </header>
+
+  <div class="tab-navigation">
+    <button id="tab-btn-creator" class="tab-btn active" onclick="switchTab('creator')">Kreator</button>
+    <button id="tab-btn-writer" class="tab-btn" onclick="switchTab('writer')">Moj Font</button>
+    <button id="tab-btn-font" class="tab-btn" onclick="switchTab('font')">Katalog</button>
+    <button id="tab-btn-cymatics" class="tab-btn" onclick="switchTab('cymatics')">3D Cimatika</button>
+    <button id="tab-btn-breath" class="tab-btn" onclick="switchTab('breath')">Disanje</button>
+  </div>
+
+  <!-- TAB 1: KREATOR -->
+  <div id="tab-creator" class="tab-content active">
+    <div class="svg-container" id="svg-container">
+      <svg viewBox="-200 -200 400 400" id="main-svg" width="380" height="380">
+        <g id="rotatable-group">
+          <g id="grid-layer"></g>
+          <g id="petals-layer"></g>
+          <g id="labels-layer"></g>
+        </g>
+      </svg>
+    </div>
+
+    <div class="display-panel">
+      <div id="array-display" class="array-text">[ ]</div>
+      <div class="rotate-controls">
+        <button class="btn-rot" onclick="rotateManual(-30)" title="⟲">⟲</button>
+        <button class="btn-rot" onclick="rotateManual(30)" title="↻">↻</button>
+      </div>
+    </div>
+
+    <div class="creator-vibro-bar" id="creator-vibro-bar">
+      <div class="creator-vibro-info">
+        <div class="creator-vibro-title" id="creator-vibro-title">Znak "A" • Grlena čakra (Vishuddha)</div>
+        <div class="creator-vibro-sub" id="creator-vibro-sub">Štitna žlijezda (Tireoidea) • 400 Hz</div>
+      </div>
+      <button class="creator-vibro-badge" id="creator-vibro-play" onclick="pulseCreatorTone()">▶ 400 Hz</button>
+    </div>
+
+    <div class="creator-controls-box">
+      <div class="char-picker-row">
+        <button id="picker-upper" class="picker-tab active" onclick="setPickerMode('upper', this)">Velika</button>
+        <button id="picker-lower" class="picker-tab" onclick="setPickerMode('lower', this)">Mala</button>
+        <button id="picker-nums" class="picker-tab" onclick="setPickerMode('nums', this)">Brojevi</button>
+        <button id="picker-symbols" class="picker-tab" onclick="setPickerMode('symbols', this)">Znakovi</button>
+        <button id="picker-var" class="picker-tab" onclick="setPickerMode('var', this)">Varijante</button>
+      </div>
+
+      <div id="char-grid-selector" class="char-grid-selector"></div>
+
+      <div class="save-action-row">
+        <input type="text" id="selected-char-input" class="selected-preview-input" value="A" maxlength="6" autocomplete="off">
+        <button id="save-btn" class="btn btn-save">Spremi Znak</button>
+        <button id="clear-btn" class="btn btn-clear" title="Clear">C</button>
+      </div>
+    </div>
+
+    <div class="gallery-section">
+      <h2 id="saved-gallery-title">Spremljeni znakovi i varijante (Klikni za učitavanje u krug)</h2>
+      <div id="gallery" class="gallery-grid"></div>
+    </div>
+  </div>
+
+  <!-- TAB 2: MOJ FONT -->
+  <div id="tab-writer" class="tab-content">
+    <div class="writer-box">
+      <div class="font-palette-container">
+        <div class="font-palette-title">
+          <span id="palette-title-text">Baza Slova &amp; Aktivne Varijante</span>
+          <span id="palette-count" style="font-size:0.7rem; color:#cbd5e1;">0 znakova</span>
+        </div>
+        <div id="font-palette-grid" class="font-palette-grid"></div>
+      </div>
+
+      <textarea id="writer-text" class="writer-input" placeholder="Napiši tekst..." autocomplete="off" rows="2"></textarea>
+
+      <div class="writer-slider-group">
+        <span id="writer-size-label">Veličina krugova:</span>
+        <input type="range" id="writer-size" class="writer-slider" min="22" max="54" value="34">
+      </div>
+
+      <div class="color-mode-row">
+        <span id="writer-color-label">Boja ispisa:</span>
+        <select id="writer-color-mode" class="color-mode-select" onchange="renderWriterOutput()">
+          <option value="spectrum">🌈 Boja svakog slova</option>
+          <option value="gold">✨ Zlatna boja</option>
+          <option value="crystal">🤍 Kristalno bijela</option>
+        </select>
+      </div>
+
+      <div class="writer-controls-below">
+        <select id="writer-instrument" class="instrument-select">
+          <option value="sine">✨ Čisti osnovni ton (Baza)</option>
+          <option value="cello">🎻 Klasično čelo (432 Hz)</option>
+          <option value="bowl">🥣 Tibetanska zdjela</option>
+          <option value="flute">🪈 Flauta</option>
+        </select>
+        <button id="btn-symphony" class="btn-symphony" onclick="toggleTextSymphony()">▶ Simfonija</button>
+      </div>
+
+      <div id="writer-output" class="writer-output"></div>
+    </div>
+  </div>
+
+  <!-- TAB 3: KATALOG -->
+  <div id="tab-font" class="tab-content">
+    <div class="gallery-section">
+      <h2 id="catalog-heading">Katalog Slova &amp; Solfeggio Portali<br><span id="catalog-sub" style="font-size:0.74rem; color:#fbbf24;">Drži prst za 3D cimatski val i ton • Klikni za Akustični laboratorij</span></h2>
+      <div id="full-font-gallery" class="gallery-grid"></div>
+    </div>
+  </div>
+
+  <!-- TAB 4: 3D CIMATIKA -->
+  <div id="tab-cymatics" class="tab-content">
+    <div class="studio-card">
+      <div class="studio-header">
+        <h2 id="studio-title">3D Cimatski Studio Uživo</h2>
+        <p id="studio-desc">Od koherencije srca i mozga (0,1 Hz) i fokusa (40 Hz) do visokih zvučnih harmonika</p>
+      </div>
+
+      <div class="mode-selector-grid">
+        <button id="mode-btn-flower" class="mode-btn active" onclick="setVisualMode('flower', this)">Cvijet Života</button>
+        <button id="mode-btn-sand" class="mode-btn" onclick="setVisualMode('sand', this)">Cimatski Pijesak</button>
+        <button id="mode-btn-water" class="mode-btn" onclick="setVisualMode('water', this)">Vodeni Valovi</button>
+        <button id="mode-btn-torus" class="mode-btn" onclick="setVisualMode('torus', this)">3D Svjetlosni Torus</button>
+      </div>
+
+      <div class="pulse-rhythm-box">
+        <div class="pulse-rhythm-top">
+          <span id="studio-pulse-label">Ritam pulsiranja (4 - 4 s):</span>
+          <span id="studio-pulse-value" class="pulse-phase-pill">4s / 4s • Širenje</span>
+        </div>
+        <div class="dual-pulse-grid">
+          <div class="pulse-phase-control">
+            <div class="pulse-sub-row">
+              <span id="studio-expand-lbl">Širenje</span>
+              <span id="studio-expand-val" class="pulse-sec-val">4 s</span>
+            </div>
+            <input type="range" id="studio-expand-slider" class="writer-slider" min="2" max="12" step="1" value="4">
+          </div>
+          <div class="pulse-phase-control">
+            <div class="pulse-sub-row">
+              <span id="studio-relax-lbl">Smirivanje</span>
+              <span id="studio-relax-val" class="pulse-sec-val">4 s</span>
+            </div>
+            <input type="range" id="studio-relax-slider" class="writer-slider" min="2" max="12" step="1" value="4">
+          </div>
+        </div>
+      </div>
+
+      <div class="studio-freq-display">
+        <div class="studio-hz-row">
+          <div class="studio-hz-big" id="studio-hz-display">432 Hz</div>
+          <div id="sub-hz-beacon" class="sub-hz-beacon" title="Pulse"></div>
+        </div>
+        <div class="studio-chakra-name" id="studio-chakra-display">Svemirski Portal &amp; Prirodna Harmonija</div>
+        <div class="studio-sub-note" id="studio-sub-note">
+          0,1 Hz odgovara sporom ritmu koherencije srca i mozga (~10 s ciklus), dok je 40 Hz povezano s fokusom i gama ritmom. Ispod 20 Hz koristi se čujni puls na mekoj bazi (174 Hz), a na 40 Hz suptilna čujna oktavna pratnja.
+        </div>
+        <div class="studio-slider-wrap">
+          <input type="range" id="studio-freq-slider" class="writer-slider" min="0.1" max="1200" step="0.1" value="432">
+          <div class="slider-ticks">
+            <span>0.1 Hz</span>
+            <span>40 Hz</span>
+            <span>432 Hz</span>
+            <span>1200 Hz</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="preset-chips">
+        <button class="preset-chip" onclick="applyStudioPreset(0.1, '#00e676', 'Koherencija (0,1 Hz • ~10 s ritam srca i mozga)', this)">0.1 Hz</button>
+        <button class="preset-chip" onclick="applyStudioPreset(40, '#00e5ff', 'Fokus (40 Hz • Bistrina i sinkronizacija)', this)">40 Hz</button>
+        <button class="preset-chip" onclick="applyStudioPreset(256, '#ff1744', 'Korijenska čakra (256 Hz • Uzemljenje)', this)">256 Hz</button>
+        <button class="preset-chip" onclick="applyStudioPreset(358, '#00e676', 'Srčana čakra (358 Hz • Prsni koš)', this)">358 Hz</button>
+        <button class="preset-chip active-preset" onclick="applyStudioPreset(432, '#fbbf24', 'Prirodna harmonija (432 Hz • Svemirski portal)', this)">432 Hz</button>
+        <button class="preset-chip" onclick="applyStudioPreset(528, '#00e676', 'Ljubav i regeneracija (528 Hz • Solfeggio)', this)">528 Hz</button>
+        <button class="preset-chip" onclick="applyStudioPreset(963, '#e879f9', 'Krunska čakra (963 Hz • Epifiza)', this)">963 Hz</button>
+        <button class="preset-chip" onclick="applyStudioPreset(1150, '#ffffff', 'Kristalni portal (1150 Hz • Bijeli kristal)', this)">1150 Hz</button>
+      </div>
+
+      <div class="studio-audio-row">
+        <button id="btn-studio-toggle" class="btn-studio-tone" onclick="toggleStudioSustainedTone()">▶ Uključi Rezonanciju (432 Hz)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: SVJESNO DISANJE -->
+  <div id="tab-breath" class="tab-content">
+    <div class="manifest-card">
+      <div id="breath-title" class="manifest-title">Svjesno disanje</div>
+      <div id="breath-sub" class="manifest-sub">Svjesni torusni tok, ovladavanje egom i aktivacija srca</div>
+
+      <div class="breath-rhythm-strip">
+        <div class="pulse-rhythm-top">
+          <span id="breath-rhythm-slider-label">Ritam disanja (4 - 4 s):</span>
+          <span id="breath-pulse-value" class="pulse-phase-pill">4s / 4s • Širenje</span>
+        </div>
+        <div class="dual-pulse-grid">
+          <div class="pulse-phase-control">
+            <div class="pulse-sub-row">
+              <span id="breath-expand-lbl">Širenje (Udah)</span>
+              <span id="breath-expand-val" class="pulse-sec-val">4 s</span>
+            </div>
+            <input type="range" id="breath-expand-slider" class="writer-slider" min="2" max="12" step="1" value="4">
+          </div>
+          <div class="pulse-phase-control">
+            <div class="pulse-sub-row">
+              <span id="breath-relax-lbl">Smirivanje (Izdah)</span>
+              <span id="breath-relax-val" class="pulse-sec-val">4 s</span>
+            </div>
+            <input type="range" id="breath-relax-slider" class="writer-slider" min="2" max="12" step="1" value="4">
+          </div>
+        </div>
+      </div>
+
+      <div id="breath-body-hr" class="manifest-flow-text">
+        <p>Svjesno disanje je disanje kojem poklanjamo pažnju, otkrivamo ga, primjećujemo i shvaćamo da ga možemo podešavati i promijeniti. Taj prijelaz gdje shvaćamo da je disanje automatsko i da ga ne primjećujemo u osvješteno zovemo Svjesno disanje.</p>
+
+        <p>Svjesno disanje se izvodi tako da sjednemo na stolicu koja nam je udobna. Imamo ravan položaj leđa i glave. Noge su savijene pod 90 stupnjeva i dlanovi su na nogama okrenuti prema gore. Svjesno disanje se izvodi tako da udišemo na nos, a izdišemo na usta. Udišemo na nos i udisaj ide sve do nožnih prstiju. Pri udisaju širimo trbuh opušteno prema van. Širimo solarni pleksus i nastavljamo udisaj do nožnih prstiju. Udisaj nije maksimalan — otprilike 70–80 posto maksimalnog udisaja, da nam bude ugodan ritam bez napora i mučenja.</p>
+
+        <p>Izdisaj ide na usta u drugom smjeru. Kraći je od udisaja. Izdišemo od nožnih prstiju preko ramena i glave van. Svakim izdisajem opuštamo cijelo tijelo sve više i više. Svaki izdisaj donosi sve dublju smirenost. Misli su nam fokusirane na udisaj i izdisaj. Ako dolaze druge misli, samo ih primijetimo i usmjerimo ih na disanje. Dišemo u ritmu koji smo opisali i dublji je nego inače. Uvijek širimo trbuh i solarni pleksus kod udisaja. Solarni pleksus je centar tijela. Njegovim širenjem cijeli proces dobiva dublje značenje. Pokreće se proces čišćenja tijela.</p>
+
+        <p>Kod disanja takvog se nakon kratkog vremena tijelo opušta i polako toneš kao da ćeš zaspati. Ako probaš stiskati šake, one su tvrde i teške ili kao napumpane. Razlog je trenutačno i jako čišćenje tijela koje smo pokrenuli takvim disanjem. Kako nastavljaš disati, pospanost nestaje i osvježiš se, a osjećaj u rukama je opet tvoj. Neki osjete strujanje ili kretanje valova kroz tijelo. Istovremeno je prisutan i osjećaj topline koji se polako spušta odozgora prema dolje sve do nožnih prstiju. Kada imaš osjećaj da toplina izlazi kroz prste van, terapija je gotova.</p>
+
+        <p>Možeš nastaviti i dalje s disanjem i onda može doći do osjećaja hlađenja jer se vibracija promijenila, blokade su uklonjene i tijelo vibrira brže — zbog toga se javlja taj ugodni osjećaj hladnoće. Isto tako misli ne vrludaju jer je fokus na disanju. Ako prakticiramo ovakav način disanja, prolazak topline kroz tijelo je sve brži. Vibriramo brže i otporniji smo na utjecaj virusa, bakterija i gljivica. Ovo je način samoterapije za vlastito zdravlje i duhovni napredak.</p>
+
+        <p>S porastom vibracije otvaraju se nove razine spoznaje i čovjek je sve osvješteniji. Ovo dovodi i do sinkronizacije lijeve i desne polutke mozga što aktivira srce. Da bi se srce aktiviralo, potrebno je u procesu osvještavanja spoznati svoj ego i ovladati egom. On je postavljen kao sigurnosna granica: do tada stvari spoznajemo kao crno-bijele, pozitivne ili negativne, kao plus ili minus — znači kroz dualitet. Kada to osvijestimo, dolazimo do srca i srce počinje zračiti prema van, prema svima. Svi u našoj okolini to osjete, prilagođavaju se toj višoj vibraciji i imaju dobrobiti.</p>
+
+        <p>Prisutan je osjećaj velike zahvalnosti i poniznosti, a manifestacija postaje trenutna — upravo je zbog toga i bila postavljena ta granica. Sa zračenjem srca ulazimo u vibraciju gdje imamo maksimalnu toleranciju i razumijevanje, ne osuđujemo, ne kritiziramo i ne sumnjamo, kao što je to bilo prije aktivacije srca. Ovaj nam način disanja to omogućuje u najkraćem vremenu, vodeći nas u novu razinu postojanja i samospoznaje.</p>
+
+        <p><span class="manifest-highlight">Zato ide udisaj kroz nos odozgo sve do nožnih prstiju, uz zadržavanje topline na mjestu gdje osjetiš bol ili blokadu da se otopi, a zatim izdisaj na usta odozdola prema gore sve do krunske čakre.</span> Udisaj kroz nos i izdisaj na usta teku u ritmu koji ti najviše odgovara, koji je najprirodniji za tebe, bez ikakvog stiskanja. Mislimo na disanje. Sa svakim izdisajem tijelo se opušta. Udahni, pa pusti zrak i još se opusti. Pusti sve van. Diši.</p>
+
+        <p>Dišemo nesvjesno i automatski cijeli dan do kraja života. Ovaj način disanja postaje svjesno disanje i naš je fokus na tome. Uspijeva uvijek i vraća nas u balans i višu vibraciju — a kada je takvo stanje, bolesti nema jer je bolest obilježje disbalansa i niže vibracije.</p>
+      </div>
+
+      <div id="breath-body-en" class="manifest-flow-text" style="display:none;">
+        <p>Conscious breathing is breathing to which we give our attention, discover it, notice it, and realize that we can adjust and change it. That shift where we realize breathing is automatic and unnoticed into conscious awareness is what we call Conscious Breathing.</p>
+
+        <p>Conscious breathing is practiced by sitting on a comfortable chair with a straight back and head. The legs are bent at 90 degrees and the palms rest on the legs facing upward. Conscious breathing is done by inhaling through the nose and exhaling through the mouth. We inhale through the nose and the inhale goes all the way down to the toes. As we inhale, we let the belly expand gently outward. We expand the solar plexus and continue the inhale to the toes. The inhale is not maximum — roughly 70–80 percent of a full inhale, keeping a comfortable rhythm without strain or forcing.</p>
+
+        <p>The exhale goes out through the mouth in the opposite direction. It is shorter than the inhale. We exhale from the toes up past the shoulders and head. With each exhale, we relax the whole body more and more. Every exhale brings deeper calm. Our thoughts stay focused on inhaling and exhaling. If other thoughts arise, we simply notice them and guide attention back to the breath. We breathe in the rhythm described, deeper than usual. We always expand the belly and solar plexus on the inhale. The solar plexus is the center of the body; expanding it gives the process deeper meaning and initiates a cleansing process in the body.</p>
+
+        <p>With this way of breathing, after a short time the body relaxes and you slowly sink as if about to fall asleep. If you try to clench your fists, they feel firm and heavy or inflated. The reason is an immediate, deep cleansing of the body initiated by this breath. As you continue breathing, drowsiness fades and you feel refreshed, and the sensation in your hands is yours again. Some feel currents or waves moving through the body. At the same time there is a sense of warmth slowly descending from above all the way down to the toes. When you feel warmth leaving through the toes, that phase is complete.</p>
+
+        <p>You can continue breathing further and then a cooling sensation may appear because the vibration has shifted, blockages have cleared, and the body vibrates faster — creating that pleasant coolness. Likewise, thoughts stop wandering because attention rests on the breath. When we practice this breath regularly, warmth moves through the body faster. We vibrate higher and become more resilient to viruses, bacteria, and fungi. It is a form of self-care for health and inner growth.</p>
+
+        <p>As vibration rises, new layers of awareness open and we become more conscious. This also leads to synchronization of the left and right hemispheres of the brain, activating the heart. For the heart to open and radiate, we recognize and master the ego. The ego acts as a safety boundary while perceiving through duality — black or white, positive or negative, plus or minus. Once recognized, we move into the heart and it begins radiating outward to everyone around us, who sense it and harmonize with that higher vibration.</p>
+
+        <p>A deep sense of gratitude and humility arises, and manifestation becomes immediate — which is why that boundary existed in the first place. Radiating from the heart brings high tolerance, understanding, and freedom from judgment, criticism, and doubt. This breathing flow supports that shift naturally and leads into a new level of presence and self-awareness.</p>
+
+        <p><span class="manifest-highlight">So the inhale moves in through the nose from above all the way to the toes — holding warmth where pain or tension is felt so it softens — and the exhale flows out through the mouth from below upward all the way to the crown center.</span> Inhale through the nose and exhale through the mouth at your own natural, unforced pace. Stay with the breath. With each exhale, the body lets go and relaxes even more. Release everything out. Breathe.</p>
+
+        <p>We breathe automatically all day long. Bringing awareness to this turns it into conscious breathing and anchors our focus. It brings us back into balance and higher vibration — where harmony prevails.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP & LABORATORIJ -->
+<div id="vibe-popup" class="vibe-popup-overlay">
+  <div class="vibe-popup-card" id="popup-card-border">
+    <div class="popup-header">
+      <div class="popup-header-left">
+        <div id="popup-badge" class="popup-char-badge">A</div>
+        <div>
+          <div id="popup-char-name" class="popup-title">Slovo A</div>
+          <div id="popup-freq" style="font-size:0.78rem; color:#94a3b8; text-align:left;">400 Hz</div>
+        </div>
+      </div>
+      <button id="popup-close-btn" class="popup-close-btn" onclick="closeLabModal()" style="display:none;">✕</button>
+    </div>
+
+    <div class="popup-info-row"><span id="lbl-chakra" class="popup-label">Čakra:</span><span id="popup-chakra" class="popup-val">-</span></div>
+    <div class="popup-info-row"><span id="lbl-organ" class="popup-label">Položaj / Organ:</span><span id="popup-organ" class="popup-val">-</span></div>
+    <div class="popup-info-row"><span id="lbl-hz" class="popup-label">Frekvencija:</span><span id="popup-hz" class="popup-val">-</span></div>
+
+    <div class="breath-box" id="breath-box">
+      <div class="breath-circle" id="breath-circle">DAH</div>
+      <div id="breath-rhythm-label" class="breath-text">Pranayama ritam: <span style="color:#fbbf24; font-weight:bold;">Prirodni tok</span></div>
+    </div>
+
+    <div class="popup-effect" id="popup-effect">-</div>
+
+    <div id="lab-panel" class="lab-panel">
+      <div id="lab-title-text" class="lab-title">Akustični Laboratorij (Osobna prilagodba)</div>
+
+      <div class="lab-row">
+        <input type="number" id="lab-freq-num" class="lab-input" min="0.1" max="1200" step="0.1" style="width:95px; font-weight:bold; color:#fbbf24;">
+        <input type="range" id="lab-freq-slider" class="writer-slider" min="0.1" max="1000" step="0.5">
+        <input type="color" id="lab-color" class="lab-color-picker" title="Color">
+      </div>
+
+      <div class="lab-row">
+        <input type="text" id="lab-chakra" class="lab-input" placeholder="Čakra / Centar">
+      </div>
+
+      <div class="lab-row">
+        <input type="text" id="lab-organ" class="lab-input" placeholder="Položaj u tijelu / Organ">
+      </div>
+
+      <div class="lab-actions">
+        <button type="button" id="lab-btn-test" class="lab-btn lab-btn-test" onclick="testLabTone()">▶ Poslušaj</button>
+        <button type="button" id="lab-btn-save" class="lab-btn lab-btn-save" onclick="saveLabSettings()">Spremi</button>
+        <button type="button" id="lab-btn-reset" class="lab-btn lab-btn-reset" onclick="resetLabSettings()">Zadano</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentLang = 'hr';
+  let expandSec = 4; // Širenje / Udah u sekundama (2–12 s)
+  let relaxSec = 4;  // Smirivanje / Izdah u sekundama (2–12 s)
+
+  const I18N = {
+    hr: {
+      subtitle: '3D Cimatska i Sveta Geometrija',
+      tabCreator: 'Kreator',
+      tabWriter: 'Moj Font',
+      tabFont: 'Katalog',
+      tabCymatics: '3D Cimatika',
+      tabBreath: 'Disanje',
+      pickerUpper: 'Velika',
+      pickerLower: 'Mala',
+      pickerNums: 'Brojevi',
+      pickerSymbols: 'Znakovi',
+      pickerVar: 'Varijante',
+      saveBtn: 'Spremi Znak',
+      savedGalleryTitle: 'Spremljeni znakovi i varijante (Klikni za učitavanje u krug)',
+      paletteTitle: 'Baza Slova & Aktivne Varijante',
+      writerPlaceholder: 'Napiši tekst...',
+      writerSizeLabel: 'Veličina krugova:',
+      writerColorLabel: 'Boja ispisa:',
+      colorSpectrum: '🌈 Boja svakog slova',
+      colorGold: '✨ Zlatna boja',
+      colorCrystal: '🤍 Kristalno bijela',
+      instSine: '✨ Čisti osnovni ton (Baza)',
+      instCello: '🎻 Klasično čelo (432 Hz)',
+      instBowl: '🥣 Tibetanska zdjela',
+      instFlute: '🪈 Flauta',
+      symphonyPlay: '▶ Simfonija',
+      symphonyStop: '■ Zaustavi',
+      catalogHeading: 'Katalog Slova & Solfeggio Portali',
+      catalogSub: 'Drži prst za 3D cimatski val i ton • Klikni za Akustični laboratorij',
+      studioTitle: '3D Cimatski Studio Uživo',
+      studioDesc: 'Od koherencije srca i mozga (0,1 Hz) i fokusa (40 Hz) do visokih zvučnih harmonika',
+      pulseLabel: 'Ritam pulsiranja',
+      breathRhythmLabel: 'Ritam disanja',
+      expandShort: 'Širenje',
+      relaxShort: 'Smirivanje',
+      breathExpandLbl: 'Širenje (Udah)',
+      breathRelaxLbl: 'Smirivanje (Izdah)',
+      phaseExpand: 'Širenje',
+      phaseRelax: 'Smirivanje',
+      modeFlower: 'Cvijet Života',
+      modeSand: 'Cimatski Pijesak',
+      modeWater: 'Vodeni Valovi',
+      modeTorus: '3D Svjetlosni Torus',
+      toneOn: '▶ Uključi Rezonanciju',
+      toneOff: '■ Zaustavi Rezonanciju',
+      breathTitle: 'Svjesno disanje',
+      breathSub: 'Svjesni torusni tok, ovladavanje egom i aktivacija srca',
+      lblChakra: 'Čakra:',
+      lblOrgan: 'Položaj / Organ:',
+      lblHz: 'Frekvencija:',
+      breathCircle: 'DAH',
+      breathRhythm: 'Pranayama ritam: <span style="color:#fbbf24; font-weight:bold;">Prirodni tok</span>',
+      labTitle: 'Akustični Laboratorij (Osobna prilagodba)',
+      labPlaceholderChakra: 'Čakra / Centar',
+      labPlaceholderOrgan: 'Položaj u tijelu / Organ',
+      labTest: '▶ Poslušaj',
+      labSave: 'Spremi',
+      labReset: 'Zadano',
+      glyphPrefix: 'Slovo',
+      symbolPrefix: 'Znak'
+    },
+    en: {
+      subtitle: '3D Cymatics & Sacred Geometry',
+      tabCreator: 'Creator',
+      tabWriter: 'My Font',
+      tabFont: 'Catalog',
+      tabCymatics: '3D Cymatics',
+      tabBreath: 'Breath',
+      pickerUpper: 'Upper',
+      pickerLower: 'Lower',
+      pickerNums: 'Numbers',
+      pickerSymbols: 'Symbols',
+      pickerVar: 'Variants',
+      saveBtn: 'Save Glyph',
+      savedGalleryTitle: 'Saved Glyphs & Variants (Tap to load into circle)',
+      paletteTitle: 'Glyph Base & Active Variants',
+      writerPlaceholder: 'Type text...',
+      writerSizeLabel: 'Circle size:',
+      writerColorLabel: 'Text color:',
+      colorSpectrum: '🌈 Each letter color',
+      colorGold: '✨ Gold color',
+      colorCrystal: '🤍 Crystal white',
+      instSine: '✨ Pure Base Tone',
+      instCello: '🎻 Classical Cello (432 Hz)',
+      instBowl: '🥣 Singing Bowl',
+      instFlute: '🪈 Flute',
+      symphonyPlay: '▶ Symphony',
+      symphonyStop: '■ Stop',
+      catalogHeading: 'Alphabet Catalog & Solfeggio Portals',
+      catalogSub: 'Hold for 3D cymatic wave & tone • Tap for Acoustic Lab',
+      studioTitle: 'Live 3D Cymatics Studio',
+      studioDesc: 'From heart-brain coherence (0.1 Hz) and focus (40 Hz) to high harmonics & crystal light',
+      pulseLabel: 'Pulse rhythm',
+      breathRhythmLabel: 'Breath rhythm',
+      expandShort: 'Expand',
+      relaxShort: 'Release',
+      breathExpandLbl: 'Expand (Inhale)',
+      breathRelaxLbl: 'Release (Exhale)',
+      phaseExpand: 'Expand',
+      phaseRelax: 'Release',
+      modeFlower: 'Flower of Life',
+      modeSand: 'Cymatic Sand',
+      modeWater: 'Water Waves',
+      modeTorus: '3D Light Torus',
+      toneOn: '▶ Start Resonance',
+      toneOff: '■ Stop Resonance',
+      breathTitle: 'Conscious Breathing',
+      breathSub: 'Conscious toroidal flow, mastering the ego & heart activation',
+      lblChakra: 'Center:',
+      lblOrgan: 'Body / Area:',
+      lblHz: 'Frequency:',
+      breathCircle: 'FLOW',
+      breathRhythm: 'Breath rhythm: <span style="color:#fbbf24; font-weight:bold;">Natural flow</span>',
+      labTitle: 'Acoustic Lab (Manual Frequency & Tuning)',
+      labPlaceholderChakra: 'Center / Chakra',
+      labPlaceholderOrgan: 'Body Area / Organ',
+      labTest: '▶ Listen',
+      labSave: 'Save',
+      labReset: 'Default',
+      glyphPrefix: 'Letter',
+      symbolPrefix: 'Symbol'
+    }
+  };
+
+  function updatePulseLabels(isExpanding = true) {
+    const t = I18N[currentLang];
+    const phaseName = isExpanding ? t.phaseExpand : t.phaseRelax;
+    const text = `${expandSec}s / ${relaxSec}s • ${phaseName}`;
+
+    const sLabel = document.getElementById('studio-pulse-label');
+    const bLabel = document.getElementById('breath-rhythm-slider-label');
+    const sVal = document.getElementById('studio-pulse-value');
+    const bVal = document.getElementById('breath-pulse-value');
+
+    if (sLabel) sLabel.textContent = `${t.pulseLabel} (${expandSec} - ${relaxSec} s):`;
+    if (bLabel) bLabel.textContent = `${t.breathRhythmLabel} (${expandSec} - ${relaxSec} s):`;
+    if (sVal) sVal.textContent = text;
+    if (bVal) bVal.textContent = text;
+
+    const sExpLbl = document.getElementById('studio-expand-lbl');
+    const sRelLbl = document.getElementById('studio-relax-lbl');
+    const bExpLbl = document.getElementById('breath-expand-lbl');
+    const bRelLbl = document.getElementById('breath-relax-lbl');
+
+    if (sExpLbl) sExpLbl.textContent = t.expandShort;
+    if (sRelLbl) sRelLbl.textContent = t.relaxShort;
+    if (bExpLbl) bExpLbl.textContent = t.breathExpandLbl;
+    if (bRelLbl) bRelLbl.textContent = t.breathRelaxLbl;
+
+    const sExpVal = document.getElementById('studio-expand-val');
+    const sRelVal = document.getElementById('studio-relax-val');
+    const bExpVal = document.getElementById('breath-expand-val');
+    const bRelVal = document.getElementById('breath-relax-val');
+
+    if (sExpVal) sExpVal.textContent = `${expandSec} s`;
+    if (sRelVal) sRelVal.textContent = `${relaxSec} s`;
+    if (bExpVal) bExpVal.textContent = `${expandSec} s`;
+    if (bRelVal) bRelVal.textContent = `${relaxSec} s`;
+  }
+
+  function applyLanguageUI() {
+    const t = I18N[currentLang];
+    document.documentElement.lang = currentLang;
+    document.getElementById('lang-label').textContent = currentLang === 'hr' ? 'EN' : 'HR';
+
+    document.getElementById('app-subtitle').textContent = t.subtitle;
+    document.getElementById('tab-btn-creator').textContent = t.tabCreator;
+    document.getElementById('tab-btn-writer').textContent = t.tabWriter;
+    document.getElementById('tab-btn-font').textContent = t.tabFont;
+    document.getElementById('tab-btn-cymatics').textContent = t.tabCymatics;
+    document.getElementById('tab-btn-breath').textContent = t.tabBreath;
+
+    document.getElementById('picker-upper').textContent = t.pickerUpper;
+    document.getElementById('picker-lower').textContent = t.pickerLower;
+    document.getElementById('picker-nums').textContent = t.pickerNums;
+    document.getElementById('picker-symbols').textContent = t.pickerSymbols;
+    document.getElementById('picker-var').textContent = t.pickerVar;
+
+    document.getElementById('save-btn').textContent = t.saveBtn;
+    document.getElementById('saved-gallery-title').textContent = t.savedGalleryTitle;
+    document.getElementById('palette-title-text').textContent = t.paletteTitle;
+    document.getElementById('writer-text').placeholder = t.writerPlaceholder;
+    document.getElementById('writer-size-label').textContent = t.writerSizeLabel;
+    document.getElementById('writer-color-label').textContent = t.writerColorLabel;
+
+    const colorSel = document.getElementById('writer-color-mode');
+    if (colorSel && colorSel.options.length >= 3) {
+      colorSel.options[0].textContent = t.colorSpectrum;
+      colorSel.options[1].textContent = t.colorGold;
+      colorSel.options[2].textContent = t.colorCrystal;
+    }
+
+    const instSel = document.getElementById('writer-instrument');
+    if (instSel && instSel.options.length >= 4) {
+      instSel.options[0].textContent = t.instSine;
+      instSel.options[1].textContent = t.instCello;
+      instSel.options[2].textContent = t.instBowl;
+      instSel.options[3].textContent = t.instFlute;
+    }
+
+    const symBtn = document.getElementById('btn-symphony');
+    if (symBtn) {
+      symBtn.textContent = isSymphonyRunning ? t.symphonyStop : t.symphonyPlay;
+    }
+
+    document.getElementById('catalog-heading').innerHTML = `${t.catalogHeading}<br><span id="catalog-sub" style="font-size:0.74rem; color:#fbbf24;">${t.catalogSub}</span>`;
+    document.getElementById('studio-title').textContent = t.studioTitle;
+    document.getElementById('studio-desc').textContent = t.studioDesc;
+
+    document.getElementById('mode-btn-flower').textContent = t.modeFlower;
+    document.getElementById('mode-btn-sand').textContent = t.modeSand;
+    document.getElementById('mode-btn-water').textContent = t.modeWater;
+    document.getElementById('mode-btn-torus').textContent = t.modeTorus;
+
+    document.getElementById('breath-title').textContent = t.breathTitle;
+    document.getElementById('breath-sub').textContent = t.breathSub;
+    document.getElementById('breath-body-hr').style.display = currentLang === 'hr' ? 'block' : 'none';
+    document.getElementById('breath-body-en').style.display = currentLang === 'en' ? 'block' : 'none';
+
+    document.getElementById('lbl-chakra').textContent = t.lblChakra;
+    document.getElementById('lbl-organ').textContent = t.lblOrgan;
+    document.getElementById('lbl-hz').textContent = t.lblHz;
+    document.getElementById('breath-circle').textContent = t.breathCircle;
+    document.getElementById('breath-rhythm-label').innerHTML = t.breathRhythm;
+
+    document.getElementById('lab-title-text').textContent = t.labTitle;
+    document.getElementById('lab-chakra').placeholder = t.labPlaceholderChakra;
+    document.getElementById('lab-organ').placeholder = t.labPlaceholderOrgan;
+    document.getElementById('lab-btn-test').textContent = t.labTest;
+    document.getElementById('lab-btn-save').textContent = t.labSave;
+    document.getElementById('lab-btn-reset').textContent = t.labReset;
+
+    updatePulseLabels(lastPhaseExpanding);
+
+    const activePickerTab = document.querySelector('.picker-tab.active');
+    const modeMap = {
+      'picker-upper': 'upper',
+      'picker-lower': 'lower',
+      'picker-nums': 'nums',
+      'picker-symbols': 'symbols',
+      'picker-var': 'var'
+    };
+    const currentPickerMode = activePickerTab ? (modeMap[activePickerTab.id] || 'upper') : 'upper';
+    renderPickerGrid(currentPickerMode);
+    loadGallery();
+    renderWriterOutput();
+    updateCreatorVibroBar(document.getElementById('selected-char-input').value.trim() || 'A');
+    updateStudioFreqUI(parseFloat(document.getElementById('studio-freq-slider').value) || 432);
+  }
+
+  window.toggleLanguage = function() {
+    currentLang = currentLang === 'hr' ? 'en' : 'hr';
+    applyLanguageUI();
+  };
+
+  /* ==========================================================================
+     3D CIMATIČKI ENGINE + ASIMETRIČNI RITAM U SEKUNDAMA (ŠIRENJE / SMIRIVANJE)
+     ========================================================================== */
+  const cymaticCanvas = document.getElementById('cymatic-bg-canvas');
+  const ctx = cymaticCanvas.getContext('2d');
+
+  let canvasW = window.innerWidth;
+  let canvasH = window.innerHeight;
+
+  const cymaticState = {
+    mode: 'flower',
+    freqHz: 432,
+    targetFreqHz: 432,
+    colorHex: '#fbbf24',
+    crystalMix: 0,
+    targetCrystalMix: 0,
+    energy: 0.25,
+    targetEnergy: 0.25,
+    time: 0,
+    rotAngle: 0
+  };
+
+  let lastPhaseExpanding = true;
+
+  function hexToRgb(hex) {
+    try {
+      const clean = (hex || '#fbbf24').replace('#', '');
+      const full = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean;
+      const bigint = parseInt(full, 16);
+      if (Number.isNaN(bigint)) return { r: 251, g: 191, b: 36 };
+      return {
+        r: (bigint >> 16) & 255,
+        g: (bigint >> 8) & 255,
+        b: bigint & 255
+      };
+    } catch (e) {
+      return { r: 251, g: 191, b: 36 };
+    }
+  }
+
+  let currentRgb = hexToRgb('#fbbf24');
+
+  function formatHzLabel(hz) {
+    const num = Number(hz);
+    if (num < 10) return `${num.toFixed(1)} Hz`;
+    if (num % 1 === 0) return `${num.toFixed(0)} Hz`;
+    return `${num.toFixed(1)} Hz`;
+  }
+
+  function getFrequencySpectrum(hz) {
+    const val = Number(hz) || 432;
+    if (val < 20) {
+      return {
+        color: '#00e676',
+        crystal: 0,
+        chakra: currentLang === 'hr' ? 'Koherencija / Ritam fokusa (<20 Hz)' : 'Coherence / Rhythm (<20 Hz)',
+        organ: currentLang === 'hr' ? 'Srce, mozak i autonomni živčani sustav' : 'Heart, brain & nervous system'
+      };
+    } else if (val < 285) {
+      return {
+        color: '#ff1744',
+        crystal: 0,
+        chakra: currentLang === 'hr' ? 'Korijenska čakra (Muladhara)' : 'Root Center (Muladhara)',
+        organ: currentLang === 'hr' ? 'Zdjelica / Trtična kost' : 'Pelvis / Base'
+      };
+    } else if (val < 320) {
+      return {
+        color: '#ff6d00',
+        crystal: 0,
+        chakra: currentLang === 'hr' ? 'Sakralna čakra (Swadhisthana)' : 'Sacral Center (Swadhisthana)',
+        organ: currentLang === 'hr' ? 'Donji trbuh / Bubrezi' : 'Lower abdomen / Kidneys'
+      };
+    } else if (val < 356) {
+      return {
+        color: '#ffc400',
+        crystal: 0,
+        chakra: currentLang === 'hr' ? 'Solarni pleksus (Manipura)' : 'Solar Plexus (Manipura)',
+        organ: currentLang === 'hr' ? 'Želudac / Jetra / Slezena' : 'Stomach / Liver / Spleen'
+      };
+    } else if (val < 398) {
+      return {
+        color: '#00e676',
+        crystal: 0,
+        chakra: currentLang === 'hr' ? 'Srčana čakra (Anahata)' : 'Heart Center (Anahata)',
+        organ: currentLang === 'hr' ? 'Srce / Pluća / Timus' : 'Heart / Lungs / Thymus'
+      };
+    } else if (val < 436) {
+      return {
+        color: '#00e5ff',
+        crystal: 0,
+        chakra: currentLang === 'hr' ? 'Grlena čakra (Vishuddha)' : 'Throat Center (Vishuddha)',
+        organ: currentLang === 'hr' ? 'Grlo / Štitna žlijezda' : 'Throat / Thyroid'
+      };
+    } else if (val < 540) {
+      return {
+        color: '#3d5afe',
+        crystal: 0.1,
+        chakra: currentLang === 'hr' ? 'Treće oko & Harmonija (Ajna)' : 'Third Eye & Harmony (Ajna)',
+        organ: currentLang === 'hr' ? 'Sinusi / Hipofiza / Korteks' : 'Sinuses / Pituitary / Cortex'
+      };
+    } else if (val < 740) {
+      return {
+        color: '#7c4dff',
+        crystal: 0.25,
+        chakra: currentLang === 'hr' ? 'Više treće oko (Ajna)' : 'Upper Third Eye (Ajna)',
+        organ: currentLang === 'hr' ? 'Prednji čeoni režanj i fokus' : 'Prefrontal focus & clarity'
+      };
+    } else if (val < 963) {
+      return {
+        color: '#d500f9',
+        crystal: 0.45,
+        chakra: currentLang === 'hr' ? 'Krunska čakra (Sahasrāra)' : 'Crown Center (Sahasrāra)',
+        organ: currentLang === 'hr' ? 'Epifiza / Kruna glave' : 'Pineal / Crown'
+      };
+    } else {
+      const extra = Math.min(1, 0.65 + ((val - 963) / 237) * 0.35);
+      return {
+        color: '#f5f3ff',
+        crystal: extra,
+        chakra: currentLang === 'hr' ? 'Kristalni Krunski Portal (Iznad 963 Hz)' : 'Crystal Crown Portal (Above 963 Hz)',
+        organ: currentLang === 'hr' ? 'Kristalna rezonancija i suptilno polje' : 'Crystal resonance & subtle field'
+      };
+    }
+  }
+
+  function setCymaticImpulse(hz, colorHex, energyBoost = 1.0, statusLabel = null) {
+    const numHz = Number(hz) || 432;
+    const spec = getFrequencySpectrum(numHz);
+    cymaticState.targetFreqHz = numHz;
+    cymaticState.colorHex = colorHex || spec.color;
+    cymaticState.targetCrystalMix = numHz >= 963 ? Math.max(0.75, spec.crystal) : spec.crystal;
+    currentRgb = hexToRgb(cymaticState.colorHex);
+    cymaticState.targetEnergy = energyBoost;
+
+    document.documentElement.style.setProperty('--active-accent', cymaticState.colorHex);
+    const dot = document.getElementById('live-dot');
+    const txt = document.getElementById('live-status-text');
+    if (dot) {
+      dot.style.background = cymaticState.colorHex;
+      dot.style.boxShadow = `0 0 10px ${cymaticState.colorHex}`;
+    }
+    if (txt) {
+      txt.textContent = statusLabel || `${formatHzLabel(numHz)} • ${getModeHumanName(cymaticState.mode)}`;
+    }
+  }
+
+  function relaxCymaticImpulse() {
+    cymaticState.targetEnergy = 0.25;
+  }
+
+  function getModeHumanName(m) {
+    const t = I18N[currentLang];
+    if (m === 'flower') return t.modeFlower;
+    if (m === 'water') return t.modeWater;
+    if (m === 'torus') return t.modeTorus;
+    return t.modeSand;
+  }
+
+  const SAND_COUNT = 1500;
+  const sandParticles = [];
+
+  function initSandParticles() {
+    sandParticles.length = 0;
+    for (let i = 0; i < SAND_COUNT; i++) {
+      sandParticles.push({
+        x: (Math.random() * 2 - 1),
+        y: (Math.random() * 2 - 1),
+        vx: 0,
+        vy: 0,
+        size: 1.5 + Math.random() * 1.7
+      });
+    }
+  }
+
+  function chladniAmplitude(x, y, n, m) {
+    const pi = Math.PI;
+    return Math.cos(n * pi * x) * Math.cos(m * pi * y) - Math.cos(m * pi * x) * Math.cos(n * pi * y);
+  }
+
+  function resizeCymaticCanvas() {
+    canvasW = window.innerWidth;
+    canvasH = window.innerHeight;
+    cymaticCanvas.width = canvasW;
+    cymaticCanvas.height = canvasH;
+  }
+
+  window.addEventListener('resize', resizeCymaticCanvas);
+
+  function getFlowerOfLifeCenters(stepR) {
+    const pts = [{ x: 0, y: 0, ring: 0 }];
+    for (let k = 0; k < 6; k++) {
+      const a = (k * Math.PI) / 3;
+      pts.push({ x: Math.cos(a) * stepR, y: Math.sin(a) * stepR, ring: 1 });
+    }
+    for (let k = 0; k < 6; k++) {
+      const a1 = (k * Math.PI) / 3;
+      const a2 = ((k + 1) * Math.PI) / 3;
+      pts.push({ x: Math.cos(a1) * stepR * 2, y: Math.sin(a1) * stepR * 2, ring: 2 });
+      pts.push({
+        x: (Math.cos(a1) + Math.cos(a2)) * stepR,
+        y: (Math.sin(a1) + Math.sin(a2)) * stepR,
+        ring: 2
+      });
+    }
+    return pts;
+  }
+
+  function renderCymaticLoop() {
+    const dt = 0.016;
+    cymaticState.time += dt;
+    cymaticState.freqHz += (cymaticState.targetFreqHz - cymaticState.freqHz) * 0.14;
+    cymaticState.energy += (cymaticState.targetEnergy - cymaticState.energy) * 0.12;
+    cymaticState.crystalMix += (cymaticState.targetCrystalMix - cymaticState.crystalMix) * 0.12;
+
+    // Puni ciklus = expandSec (širenje / udah) + relaxSec (smirivanje / izdah)
+    const expDur = Math.max(2, expandSec);
+    const relDur = Math.max(2, relaxSec);
+    const fullCycleSec = expDur + relDur;
+    const elapsedInCycle = cymaticState.time % fullCycleSec;
+    const isExpanding = elapsedInCycle < expDur;
+
+    if (isExpanding !== lastPhaseExpanding) {
+      lastPhaseExpanding = isExpanding;
+      updatePulseLabels(isExpanding);
+    }
+
+    // Glatki sinusoidni val (-1 do +1) s zasebnim trajanjem svake faze
+    let pulseWave = 0;
+    if (isExpanding) {
+      const p = elapsedInCycle / expDur; // 0 -> 1 tijekom širenja
+      pulseWave = -Math.cos(p * Math.PI); // -1 -> +1
+    } else {
+      const p = (elapsedInCycle - expDur) / relDur; // 0 -> 1 tijekom smirivanja
+      pulseWave = Math.cos(p * Math.PI); // +1 -> -1
+    }
+
+    const effectiveRate = cymaticState.freqHz < 20
+      ? Math.max(0.25, cymaticState.freqHz * 4.5)
+      : Math.min(4.5, 0.35 + (cymaticState.freqHz / 432));
+
+    cymaticState.rotAngle += dt * effectiveRate * 0.28;
+
+    const beacon = document.getElementById('sub-hz-beacon');
+    if (beacon) {
+      const scaleVal = 0.82 + (pulseWave * 0.5 + 0.5) * 0.55;
+      beacon.style.transform = `scale(${scaleVal.toFixed(2)})`;
+      beacon.style.background = cymaticState.colorHex;
+      beacon.style.boxShadow = `0 0 ${Math.round(8 + scaleVal * 10)}px ${cymaticState.colorHex}`;
+    }
+
+    ctx.fillStyle = 'rgba(7, 7, 11, 0.19)';
+    ctx.fillRect(0, 0, canvasW, canvasH);
+
+    const cx = canvasW / 2;
+    const cy = canvasH / 2;
+    const isWideScreen = canvasW >= 768;
+    const baseRadius = isWideScreen
+      ? Math.min(canvasW * 0.32, canvasH * 0.44)
+      : Math.min(canvasW, canvasH) * 0.45;
+    const screenSoftness = isWideScreen ? 0.72 : 1.0;
+
+    const { r, g, b } = currentRgb;
+    const cMix = cymaticState.crystalMix;
+    const drawR = Math.round(r + (255 - r) * cMix);
+    const drawG = Math.round(g + (255 - g) * cMix);
+    const drawB = Math.round(b + (255 - b) * cMix);
+
+    const norm = Math.abs(cymaticState.freqHz - 200) / 140;
+    const n = 2 + Math.abs(Math.floor(norm * 2.3)) % 6;
+    const m = 3 + Math.abs(Math.floor(norm * 3.7)) % 7;
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+
+    if (cymaticState.mode === 'flower') {
+      const stepR = baseRadius * 0.25;
+      const breath = 1 + pulseWave * (0.048 + cymaticState.energy * 0.03);
+      const circleR = stepR * breath;
+      const centersList = getFlowerOfLifeCenters(stepR);
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(cymaticState.rotAngle * 0.32);
+
+      ctx.beginPath();
+      ctx.arc(0, 0, stepR * 3.05 * breath, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${drawR}, ${drawG}, ${drawB}, ${(0.24 + cymaticState.energy * 0.26) * screenSoftness})`;
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(0, 0, stepR * 3.22 * breath, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${(0.14 + cMix * 0.42) * screenSoftness})`;
+      ctx.lineWidth = 1.1;
+      ctx.stroke();
+
+      for (let i = 0; i < centersList.length; i++) {
+        const pt = centersList[i];
+        const px = pt.x * breath;
+        const py = pt.y * breath;
+        const wave = 0.5 + 0.5 * pulseWave;
+        const alpha = ((0.22 + wave * 0.22) + cymaticState.energy * 0.22) * screenSoftness;
+
+        ctx.beginPath();
+        ctx.arc(px, py, circleR, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(${drawR}, ${drawG}, ${drawB}, ${Math.min(1, alpha)})`;
+        ctx.lineWidth = pt.ring <= 1 ? 1.85 : 1.35;
+        ctx.stroke();
+
+        if (cMix > 0.15 || cymaticState.energy > 0.65) {
+          ctx.beginPath();
+          ctx.arc(px, py, 2.1 + cMix * 2.2, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${(0.25 + cMix * 0.6) * screenSoftness})`;
+          ctx.fill();
+        }
+      }
+
+      ctx.restore();
+    } else if (cymaticState.mode === 'sand') {
+      const cosR = Math.cos(cymaticState.rotAngle);
+      const sinR = Math.sin(cymaticState.rotAngle);
+      const pulseScale = 1 + pulseWave * 0.04;
+      const vibrationShake = 0.012 + (pulseWave * 0.5 + 0.5) * 0.02;
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, baseRadius * 1.02 * pulseScale, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${drawR}, ${drawG}, ${drawB}, ${(0.22 + cymaticState.energy * 0.25) * screenSoftness})`;
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+
+      for (let i = 0; i < SAND_COUNT; i++) {
+        const p = sandParticles[i];
+        const amp = chladniAmplitude(p.x, p.y, n, m);
+        const absAmp = Math.abs(amp);
+
+        if (absAmp > 0.04) {
+          const eps = 0.015;
+          const dx = Math.abs(chladniAmplitude(p.x + eps, p.y, n, m)) - absAmp;
+          const dy = Math.abs(chladniAmplitude(p.x, p.y + eps, n, m)) - absAmp;
+
+          p.vx = p.vx * 0.72 - dx * 0.35 + (Math.random() - 0.5) * vibrationShake * absAmp;
+          p.vy = p.vy * 0.72 - dy * 0.35 + (Math.random() - 0.5) * vibrationShake * absAmp;
+        } else {
+          p.vx = p.vx * 0.65 + (Math.random() - 0.5) * 0.004;
+          p.vy = p.vy * 0.65 + (Math.random() - 0.5) * 0.004;
+        }
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (Math.hypot(p.x, p.y) > 0.98) {
+          p.x = (Math.random() * 1.6 - 0.8);
+          p.y = (Math.random() * 1.6 - 0.8);
+          p.vx = 0;
+          p.vy = 0;
+        }
+
+        const rx = (p.x * cosR - p.y * sinR) * pulseScale;
+        const ry = (p.x * sinR + p.y * cosR) * pulseScale;
+        const screenX = cx + rx * baseRadius;
+        const screenY = cy + ry * baseRadius * 0.92;
+
+        const alpha = Math.min(1.0, (0.44 + (1 - absAmp) * 0.45 + cymaticState.energy * 0.2) * screenSoftness);
+        ctx.fillStyle = `rgba(${drawR}, ${drawG}, ${drawB}, ${alpha})`;
+        ctx.fillRect(screenX, screenY, p.size, p.size);
+      }
+    } else if (cymaticState.mode === 'water') {
+      const petalsSymmetry = Math.max(4, (n + m) % 12 + 4);
+      const ringCount = 20;
+      const breath = 1 + pulseWave * 0.045;
+
+      for (let k = 1; k <= ringCount; k++) {
+        const progress = k / ringCount;
+        const rad = progress * baseRadius * 1.16 * breath;
+        ctx.beginPath();
+        const steps = 120;
+        for (let s = 0; s <= steps; s++) {
+          const theta = (s / steps) * Math.PI * 2;
+          const wave1 = Math.sin(petalsSymmetry * theta + pulseWave * 1.6);
+          const wave2 = Math.cos((petalsSymmetry - 2) * theta - pulseWave * 1.1 + k * 0.7);
+          const displacement = (wave1 * 0.6 + wave2 * 0.4) * (6 + (pulseWave * 0.5 + 0.5) * 12) * Math.sin(progress * Math.PI);
+
+          const px = cx + Math.cos(theta) * (rad + displacement);
+          const py = cy + Math.sin(theta) * (rad + displacement) * 0.88;
+
+          if (s === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        const alpha = (1 - progress * 0.65) * (0.28 + cymaticState.energy * 0.35) * screenSoftness;
+        ctx.strokeStyle = `rgba(${drawR}, ${drawG}, ${drawB}, ${alpha})`;
+        ctx.lineWidth = 1.75;
+        ctx.stroke();
+      }
+    } else {
+      const R_major = baseRadius * (0.62 + pulseWave * 0.035);
+      const r_minor = baseRadius * (0.27 + (pulseWave * 0.5 + 0.5) * 0.06);
+      const uSteps = 36;
+      const vSteps = 20;
+      const tiltX = 0.62;
+
+      for (let i = 0; i < uSteps; i++) {
+        const u = (i / uSteps) * Math.PI * 2 + cymaticState.rotAngle;
+        ctx.beginPath();
+        for (let j = 0; j <= vSteps; j++) {
+          const v = (j / vSteps) * Math.PI * 2 + pulseWave * 0.8;
+          const pulse = 1 + 0.07 * Math.sin(n * u + m * v);
+
+          const x3 = (R_major + r_minor * pulse * Math.cos(v)) * Math.cos(u);
+          const y3 = (R_major + r_minor * pulse * Math.cos(v)) * Math.sin(u);
+          const z3 = r_minor * pulse * Math.sin(v);
+
+          const yRot = y3 * Math.cos(tiltX) - z3 * Math.sin(tiltX);
+          const zRot = y3 * Math.sin(tiltX) + z3 * Math.cos(tiltX);
+
+          const fov = 550;
+          const scale = fov / (fov + zRot);
+          const sx = cx + x3 * scale;
+          const sy = cy + yRot * scale;
+
+          if (j === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        const alpha = (0.24 + cymaticState.energy * 0.35) * screenSoftness;
+        ctx.strokeStyle = `rgba(${drawR}, ${drawG}, ${drawB}, ${alpha})`;
+        ctx.lineWidth = 1.55;
+        ctx.stroke();
+      }
+    }
+
+    ctx.restore();
+    requestAnimationFrame(renderCymaticLoop);
+  }
+
+  /* ==========================================================================
+     TABLICA FREKVENCIJA I GEOMETRIJA (HR + EN)
+     ========================================================================== */
+  const PETAL_RESONANCE = {
+    1:  { note: 'C#4', hz: 277.18, chakraHr: 'Korijenska / Sakralna', chakraEn: 'Root / Sacral', organHr: 'Trtična kost i zdjelica', organEn: 'Coccyx & pelvis', color: '#ff1744' },
+    2:  { note: 'D4',  hz: 293.66, chakraHr: 'Sakralna (Swadhisthana)', chakraEn: 'Sacral (Swadhisthana)', organHr: 'Donji trbuh i tekućine', organEn: 'Lower abdomen & fluids', color: '#ff6d00' },
+    3:  { note: 'E4',  hz: 329.63, chakraHr: 'Solarni pleksus (Manipura)', chakraEn: 'Solar Plexus (Manipura)', organHr: 'Probava i slezena', organEn: 'Digestion & spleen', color: '#ffc400' },
+    4:  { note: 'F4',  hz: 349.23, chakraHr: 'Srčana (Anahata)', chakraEn: 'Heart (Anahata)', organHr: 'Prsni koš i pluća', organEn: 'Chest & lungs', color: '#00e676' },
+    5:  { note: 'G4',  hz: 392.00, chakraHr: 'Grlena (Vishuddha)', chakraEn: 'Throat (Vishuddha)', organHr: 'Grlo i štitna žlijezda', organEn: 'Throat & thyroid', color: '#00e5ff' },
+    6:  { note: 'A4',  hz: 440.00, chakraHr: 'Treće oko (Ajna)', chakraEn: 'Third Eye (Ajna)', organHr: 'Čelo i hipofiza', organEn: 'Brow & pituitary', color: '#3d5afe' },
+    7:  { note: 'B4',  hz: 493.88, chakraHr: 'Krunska (Sahasrāra)', chakraEn: 'Crown (Sahasrāra)', organHr: 'Kruna glave i epifiza', organEn: 'Crown & pineal', color: '#d500f9' },
+    8:  { note: 'C4',  hz: 261.63, chakraHr: 'Korijenska (Muladhara)', chakraEn: 'Root (Muladhara)', organHr: 'Uzemljenje i kosti', organEn: 'Grounding & bones', color: '#ff1744' },
+    9:  { note: 'D#4', hz: 311.13, chakraHr: 'Sakralna / Solarni', chakraEn: 'Sacral / Solar', organHr: 'Bubrezi i nadbubrežne', organEn: 'Kidneys & adrenals', color: '#ff9100' },
+    10: { note: 'F#4', hz: 369.99, chakraHr: 'Srčana (Anahata)', chakraEn: 'Heart (Anahata)', organHr: 'Srčani ritam i timus', organEn: 'Heart rhythm & thymus', color: '#00e676' },
+    11: { note: 'G#4', hz: 415.30, chakraHr: 'Grlena (Vishuddha)', chakraEn: 'Throat (Vishuddha)', organHr: 'Glasnice i rezonancija', organEn: 'Vocal cords & resonance', color: '#40c4ff' },
+    12: { note: 'A#4', hz: 466.16, chakraHr: 'Treće oko / Krunska', chakraEn: 'Third Eye / Crown', organHr: 'Sinkronizacija glave', organEn: 'Head synchronization', color: '#b388ff' }
+  };
+
+  const VIBRO_TABLE = {
+    'S': { chakraHr: 'Korijenska čakra (Muladhara)', chakraEn: 'Root Chakra (Muladhara)', organHr: 'Trtična kost (Koksiks)', organEn: 'Coccyx (Tailbone)', color: '#ff1744', freqHz: 256, freqTextHr: 'Ton C (~256 Hz)', freqTextEn: 'Tone C (~256 Hz)', effectHr: 'Kontinuirano strujanje koje stvara temeljno uzemljenje.', effectEn: 'Continuous flow that builds foundational grounding.' },
+    'Š': { chakraHr: 'Korijenska čakra (Muladhara)', chakraEn: 'Root Chakra (Muladhara)', organHr: 'Perineum (Međica)', organEn: 'Perineum', color: '#b71c1c', freqHz: 262, freqTextHr: 'Ton C# (~262 Hz)', freqTextEn: 'Tone C# (~262 Hz)', effectHr: 'Šum niske frekvencije koji smiruje autonomni živčani sustav.', effectEn: 'Low-frequency sibilance that calms the autonomic nervous system.' },
+    'Ž': { chakraHr: 'Korijenska čakra / Sakralna', chakraEn: 'Root / Sacral Chakra', organHr: 'Bedrena kost (Femur)', organEn: 'Femur (Thigh bone)', color: '#8d6e63', freqHz: 268, freqTextHr: 'Ton D (~268 Hz)', freqTextEn: 'Tone D (~268 Hz)', effectHr: 'Teški šumnik koji rezonira kroz koštani sustav zdjelice.', effectEn: 'Deep voiced sibilant resonating through the pelvic skeletal structure.' },
+    'Z': { chakraHr: 'Sakralna čakra (Swadhisthana)', chakraEn: 'Sacral Chakra (Swadhisthana)', organHr: 'Išijatični živac', organEn: 'Sciatic nerve', color: '#f50057', freqHz: 274, freqTextHr: 'Ton D# (~274 Hz)', freqTextEn: 'Tone D# (~274 Hz)', effectHr: 'Električni bzz osjećaj koji budi donji energetski centar.', effectEn: 'Buzzing sensation that awakens the lower energy center.' },
+    'U': { chakraHr: 'Korijenska čakra (Muladhara)', chakraEn: 'Root Chakra (Muladhara)', organHr: 'Dno zdjelice / Noge', organEn: 'Pelvic floor / Legs', color: '#d50000', freqHz: 280, freqTextHr: 'Ton E (~280 Hz)', freqTextEn: 'Tone E (~280 Hz)', effectHr: 'Duboki vokal koji sidri svijest u najdublje slojeve tijela.', effectEn: 'Deep vowel anchoring awareness into the deepest layers of the body.' },
+    'B': { chakraHr: 'Sakralna čakra (Swadhisthana)', chakraEn: 'Sacral Chakra (Swadhisthana)', organHr: 'Maternica / Prostata', organEn: 'Uterus / Prostate', color: '#ff6600', freqHz: 286, freqTextHr: 'Ton F (~286 Hz)', freqTextEn: 'Tone F (~286 Hz)', effectHr: 'Eksplozivan usneni pritisak koji pokreće energiju tekućina.', effectEn: 'Bilabial release that stirs fluid energy in the lower center.' },
+    'P': { chakraHr: 'Sakralna čakra (Swadhisthana)', chakraEn: 'Sacral Chakra (Swadhisthana)', organHr: 'Bubrezi', organEn: 'Kidneys', color: '#ff6d00', freqHz: 292, freqTextHr: 'Ton F# (~292 Hz)', freqTextEn: 'Tone F# (~292 Hz)', effectHr: 'Eksplozivno otpuštanje stvorene unutarnje potencijalne energije.', effectEn: 'Crisp release of built-up inner potential energy.' },
+    'V': { chakraHr: 'Sakralna čakra (Swadhisthana)', chakraEn: 'Sacral Chakra (Swadhisthana)', organHr: 'Nadbubrežne žlijezde', organEn: 'Adrenal glands', color: '#ff8a65', freqHz: 298, freqTextHr: 'Ton G (~298 Hz)', freqTextEn: 'Tone G (~298 Hz)', effectHr: 'Stvara kontinuiranu toplu vibraciju u zdjeličnom pojasu.', effectEn: 'Creates a steady warm vibration across the pelvic girdle.' },
+    'W': { chakraHr: 'Sakralna čakra (Swadhisthana)', chakraEn: 'Sacral Chakra (Swadhisthana)', organHr: 'Limfni čvorovi zdjelice', organEn: 'Pelvic lymph nodes', color: '#ff80ab', freqHz: 304, freqTextHr: 'Ton G# (~304 Hz)', freqTextEn: 'Tone G# (~304 Hz)', effectHr: 'Dvostruki usneni prijelaz, potiče fluidnost i limfnu drenažu.', effectEn: 'Smooth labial glide supporting fluidity and lymphatic flow.' },
+    'F': { chakraHr: 'Sakralna čakra (Swadhisthana)', chakraEn: 'Sacral Chakra (Swadhisthana)', organHr: 'Jajovodi / Sjemenovodi', organEn: 'Fallopian / Vas deferens', color: '#ff7043', freqHz: 310, freqTextHr: 'Ton A (~310 Hz)', freqTextEn: 'Tone A (~310 Hz)', effectHr: 'Strujanje zraka koje hladi i opušta napetost u donjem dijelu trbuha.', effectEn: 'Gentle airflow that cools and eases tension in the lower belly.' },
+    'M': { chakraHr: 'Sakralna / Solarni pleksus', chakraEn: 'Sacral / Solar Plexus', organHr: 'Debelo crijevo', organEn: 'Large intestine', color: '#ffab91', freqHz: 316, freqTextHr: 'Ton A# (~316 Hz)', freqTextEn: 'Tone A# (~316 Hz)', effectHr: 'Zatvoreni rezonator (Mmmm) koji širi vibraciju kroz lubanju.', effectEn: 'Closed hum (Mmmm) spreading gentle vibration through the head.' },
+    'O': { chakraHr: 'Čakra solarnog pleksusa (Manipura)', chakraEn: 'Solar Plexus Chakra (Manipura)', organHr: 'Mokraćni mjehur', organEn: 'Bladder', color: '#ff9100', freqHz: 322, freqTextHr: 'Ton B (~322 Hz)', freqTextEn: 'Tone B (~322 Hz)', effectHr: 'Okrugli vokal koji rezonira u lumbalnom dijelu kralježnice.', effectEn: 'Rounded vowel resonating in the lumbar spine.' },
+    'D': { chakraHr: 'Čakra solarnog pleksusa (Manipura)', chakraEn: 'Solar Plexus Chakra (Manipura)', organHr: 'Jetra', organEn: 'Liver', color: '#ffc400', freqHz: 328, freqTextHr: 'Ton C (~328 Hz)', freqTextEn: 'Tone C (~328 Hz)', effectHr: 'Snažan jezični udarac koji usmjerava unutarnju probavnu vatru.', effectEn: 'Clear tongue tap directing inner vitality and digestion.' },
+    'T': { chakraHr: 'Čakra solarnog pleksusa (Manipura)', chakraEn: 'Solar Plexus Chakra (Manipura)', organHr: 'Želudac', organEn: 'Stomach', color: '#ffab00', freqHz: 334, freqTextHr: 'Ton C# (~334 Hz)', freqTextEn: 'Tone C# (~334 Hz)', effectHr: 'Oštar jezični pritisak, stimulira mentalnu budnost i volju.', effectEn: 'Crisp dental articulation stimulating mental clarity and drive.' },
+    'N': { chakraHr: 'Čakra solarnog pleksusa (Manipura)', chakraEn: 'Solar Plexus Chakra (Manipura)', organHr: 'Tanko crijevo', organEn: 'Small intestine', color: '#ffd600', freqHz: 340, freqTextHr: 'Ton D (~340 Hz)', freqTextEn: 'Tone D (~340 Hz)', effectHr: 'Nazalni dental koji masira unutarnje organe trbušne šupljine.', effectEn: 'Nasal resonance gently massaging the abdominal core.' },
+    'Nj': { chakraHr: 'Čakra solarnog pleksusa (Manipura)', chakraEn: 'Solar Plexus Chakra (Manipura)', organHr: 'Nepčani živčani splet', organEn: 'Palatal plexus', color: '#ffe57f', freqHz: 343, freqTextHr: 'Ton D# (~343 Hz)', freqTextEn: 'Tone D# (~343 Hz)', effectHr: 'Nepčana rezonancija koja povezuje središnji i gornji tok.', effectEn: 'Palatal resonance connecting middle and upper flow.' },
+    'R': { chakraHr: 'Čakra solarnog pleksusa (Manipura)', chakraEn: 'Solar Plexus Chakra (Manipura)', organHr: 'Slezena', organEn: 'Spleen', color: '#ff9100', freqHz: 346, freqTextHr: 'Ton D# (~346 Hz)', freqTextEn: 'Tone D# (~346 Hz)', effectHr: 'Vibrirajući suglasnik; djeluje kao unutrašnji generator topline.', effectEn: 'Vibrating consonant acting as an internal warmth generator.' },
+    'C': { chakraHr: 'Čakra solarnog pleksusa (Manipura)', chakraEn: 'Solar Plexus Chakra (Manipura)', organHr: 'Gušterača (Pankreas)', organEn: 'Pancreas', color: '#fff200', freqHz: 352, freqTextHr: 'Ton E (~352 Hz)', freqTextEn: 'Tone E (~352 Hz)', effectHr: 'Prednji dentalni pritisak koji stimulira metabolizam.', effectEn: 'Front dental release supporting metabolic balance.' },
+    'Č': { chakraHr: 'Srčana čakra (Anahata)', chakraEn: 'Heart Chakra (Anahata)', organHr: 'Gornji režnjevi pluća', organEn: 'Upper lung lobes', color: '#00e676', freqHz: 358, freqTextHr: 'Ton F (~358 Hz)', freqTextEn: 'Tone F (~358 Hz)', effectHr: 'Oštri šumnik koji rezonira u plućima i oslobađa tugu.', effectEn: 'Focused breath sound resonating in the lungs and releasing heaviness.' },
+    'Ć': { chakraHr: 'Srčana čakra (Anahata)', chakraEn: 'Heart Chakra (Anahata)', organHr: 'Timus (Prsna žlijezda)', organEn: 'Thymus gland', color: '#00bfa5', freqHz: 364, freqTextHr: 'Ton F# (~364 Hz)', freqTextEn: 'Tone F# (~364 Hz)', effectHr: 'Meki pritisak zraka koji rezonira u prsnoj kosti i imunitetu.', effectEn: 'Soft breath release resonating across the sternum and thymus.' },
+    'Dž': { chakraHr: 'Srčana čakra (Anahata)', chakraEn: 'Heart Chakra (Anahata)', organHr: 'Srčani pleksus / Prsni koš', organEn: 'Cardiac plexus / Chest', color: '#64ffda', freqHz: 370, freqTextHr: 'Ton G (~370 Hz)', freqTextEn: 'Tone G (~370 Hz)', effectHr: 'Otvoreni pritisak u prsima koji potiče dublji dah i protok.', effectEn: 'Open chest resonance encouraging deeper breath and flow.' },
+    'Đ': { chakraHr: 'Srčana čakra (Anahata)', chakraEn: 'Heart Chakra (Anahata)', organHr: 'Srčani zalisci / Perikard', organEn: 'Heart / Pericardium', color: '#1de9b6', freqHz: 376, freqTextHr: 'Ton G# (~376 Hz)', freqTextEn: 'Tone G# (~376 Hz)', effectHr: 'Širi prsni koš i harmonizira elektromagnetski ritam srca.', effectEn: 'Opens the chest and harmonizes the rhythm of the heart.' },
+    'G': { chakraHr: 'Srčana čakra (Anahata)', chakraEn: 'Heart Chakra (Anahata)', organHr: 'Donji režnjevi pluća', organEn: 'Lower lung lobes', color: '#33691e', freqHz: 382, freqTextHr: 'Ton A (~382 Hz)', freqTextEn: 'Tone A (~382 Hz)', effectHr: 'Grleni šumnik koji potiče protok kroz srčani pleksus.', effectEn: 'Velar resonance supporting flow through the heart center.' },
+    'H': { chakraHr: 'Srčana čakra (Anahata)', chakraEn: 'Heart Chakra (Anahata)', organHr: 'Dušnik (Traheja)', organEn: 'Trachea (Windpipe)', color: '#2e7d32', freqHz: 388, freqTextHr: 'Ton A# (~388 Hz)', freqTextEn: 'Tone A# (~388 Hz)', effectHr: 'Čisti izdisaj koji izravno oslobađa emocionalni pritisak iz prsa.', effectEn: 'Open breath release easing emotional tension in the chest.' },
+    'K': { chakraHr: 'Srčana / Grlena čakra', chakraEn: 'Heart / Throat Chakra', organHr: 'Bronhijalno stablo', organEn: 'Bronchial airways', color: '#76ff03', freqHz: 394, freqTextHr: 'Ton B (~394 Hz)', freqTextEn: 'Tone B (~394 Hz)', effectHr: 'Zračna blokada i otpuštanje, stimulira obrambeni sustav prsišta.', effectEn: 'Clean release supporting breath openness in the upper chest.' },
+    'A': { chakraHr: 'Grlena čakra (Vishuddha)', chakraEn: 'Throat Chakra (Vishuddha)', organHr: 'Štitna žlijezda (Tireoidea)', organEn: 'Thyroid gland', color: '#00e5ff', freqHz: 400, freqTextHr: 'Ton C (~400 Hz)', freqTextEn: 'Tone C (~400 Hz)', effectHr: 'Otvara prostor grla, potiče slobodno izražavanje i istinu.', effectEn: 'Opens the throat space and supports clear, authentic expression.' },
+    'E': { chakraHr: 'Grlena čakra (Vishuddha)', chakraEn: 'Throat Chakra (Vishuddha)', organHr: 'Glasnice i grkljan', organEn: 'Vocal cords & larynx', color: '#40c4ff', freqHz: 408, freqTextHr: 'Ton C# (~408 Hz)', freqTextEn: 'Tone C# (~408 Hz)', effectHr: 'Širi grlo bočno, stimulira rad limfe i paratireoidnih žlijezda.', effectEn: 'Broadens vocal resonance and supports neck and throat relaxation.' },
+    'L': { chakraHr: 'Grlena / Čakra trećeg oka', chakraEn: 'Throat / Third Eye Chakra', organHr: 'Tvrdo nepce / Gornja čeljust', organEn: 'Hard palate / Upper jaw', color: '#304ffe', freqHz: 416, freqTextHr: 'Ton D (~416 Hz)', freqTextEn: 'Tone D (~416 Hz)', effectHr: 'Podizanje jezika usmjerava zvučne valove pr
